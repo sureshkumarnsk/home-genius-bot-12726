@@ -1,0 +1,1232 @@
+openapi: 3.0.3
+info:
+  title: My Home API
+  description: |
+    AI-powered household procurement & bill manager API.
+    Auto-sources grocery items from the lowest-cost vendors and learns consumption patterns.
+  version: 1.0.0
+  contact:
+    name: My Home Support
+    email: support@myhome.app
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.myhome.app/v1
+    description: Production server
+  - url: https://staging-api.myhome.app/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Local development
+
+tags:
+  - name: auth
+    description: Authentication and authorization
+  - name: users
+    description: User profile and family management
+  - name: products
+    description: Product search and price comparison
+  - name: baskets
+    description: Shopping basket management
+  - name: orders
+    description: Order creation and tracking
+  - name: inventory
+    description: Pantry inventory management
+  - name: reorder
+    description: Predictive reorder and auto-order
+  - name: bills
+    description: Bill capture and expense tracking
+  - name: admin
+    description: Admin and vendor management
+
+security:
+  - bearerAuth: []
+
+paths:
+  # =============================================================================
+  # AUTH
+  # =============================================================================
+  /auth/google:
+    post:
+      tags: [auth]
+      summary: Authenticate with Google OAuth2
+      description: Exchange Google OAuth2 code for JWT access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Google OAuth2 authorization code
+                redirect_uri:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Login with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout and revoke tokens
+      responses:
+        '204':
+          description: Logout successful
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # =============================================================================
+  # USERS
+  # =============================================================================
+  /users/me:
+    get:
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    
+    patch:
+      tags: [users]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                phone:
+                  type: string
+                household_size:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{userId}/family:
+    get:
+      tags: [users]
+      summary: Get family members
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: Family members list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FamilyMember'
+    
+    post:
+      tags: [users]
+      summary: Add family member
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, relationship]
+              properties:
+                email:
+                  type: string
+                  format: email
+                relationship:
+                  type: string
+                  enum: [spouse, child, parent, other]
+                can_add_items:
+                  type: boolean
+                  default: true
+                can_place_orders:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Family member added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyMember'
+
+  # =============================================================================
+  # PRODUCTS
+  # =============================================================================
+  /products/search:
+    get:
+      tags: [products]
+      summary: Search products with fuzzy matching
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query (product name)
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Product search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  total:
+                    type: integer
+
+  /products/{productId}:
+    get:
+      tags: [products]
+      summary: Get product details
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+
+  /products/{productId}/prices:
+    get:
+      tags: [products]
+      summary: Get product prices across vendors
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: vendors
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by vendor slugs
+        - name: include_history
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include 90-day price history
+      responses:
+        '200':
+          description: Vendor prices for product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: string
+                    format: uuid
+                  prices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VendorPrice'
+                  price_history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PriceHistoryPoint'
+
+  # =============================================================================
+  # BASKETS
+  # =============================================================================
+  /baskets:
+    get:
+      tags: [baskets]
+      summary: Get user baskets
+      parameters:
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: User baskets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Basket'
+    
+    post:
+      tags: [baskets]
+      summary: Create new basket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  default: "Grocery List"
+      responses:
+        '201':
+          description: Basket created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Basket'
+
+  /baskets/{basketId}/items:
+    post:
+      tags: [baskets]
+      summary: Add item to basket
+      parameters:
+        - name: basketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, quantity]
+              properties:
+                product_id:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: number
+                  format: float
+                  minimum: 0.01
+                unit:
+                  type: string
+      responses:
+        '201':
+          description: Item added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasketItem'
+
+  /baskets/{basketId}/compare:
+    get:
+      tags: [baskets]
+      summary: Compare basket prices across vendors
+      parameters:
+        - name: basketId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: strategy
+          in: query
+          schema:
+            type: string
+            enum: [optimal, single_vendor]
+            default: optimal
+      responses:
+        '200':
+          description: Price comparison
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceComparison'
+
+  # =============================================================================
+  # ORDERS
+  # =============================================================================
+  /orders:
+    get:
+      tags: [orders]
+      summary: Get user orders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, processing, shipped, delivered, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+    
+    post:
+      tags: [orders]
+      summary: Create order (checkout)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [basket_id, delivery_address_id, payment_method]
+              properties:
+                basket_id:
+                  type: string
+                  format: uuid
+                delivery_address_id:
+                  type: string
+                  format: uuid
+                payment_method:
+                  type: string
+                  enum: [card, upi, cod]
+                vendor_split:
+                  type: object
+                  description: Manual vendor selection override
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/{orderId}:
+    get:
+      tags: [orders]
+      summary: Get order details
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+
+  /orders/{orderId}/cancel:
+    post:
+      tags: [orders]
+      summary: Cancel order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  # =============================================================================
+  # INVENTORY
+  # =============================================================================
+  /inventory:
+    get:
+      tags: [inventory]
+      summary: Get pantry inventory
+      parameters:
+        - name: expiring_within_days
+          in: query
+          schema:
+            type: integer
+          description: Filter items expiring within N days
+      responses:
+        '200':
+          description: Inventory items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+    
+    post:
+      tags: [inventory]
+      summary: Add inventory item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItemCreate'
+      responses:
+        '201':
+          description: Item added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+
+  # =============================================================================
+  # REORDER
+  # =============================================================================
+  /reorder/predictions:
+    get:
+      tags: [reorder]
+      summary: Get reorder predictions
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [enabled, disabled, snoozed]
+      responses:
+        '200':
+          description: Reorder predictions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReorderPrediction'
+
+  /reorder/predictions/{predictionId}/opt-in:
+    post:
+      tags: [reorder]
+      summary: Opt-in to auto-reorder for product
+      parameters:
+        - name: predictionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Auto-reorder enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReorderPrediction'
+
+  /reorder/predictions/{predictionId}/opt-out:
+    post:
+      tags: [reorder]
+      summary: Opt-out of auto-reorder
+      parameters:
+        - name: predictionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Auto-reorder disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReorderPrediction'
+
+  # =============================================================================
+  # BILLS
+  # =============================================================================
+  /bills:
+    get:
+      tags: [bills]
+      summary: Get bills
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bills list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+    
+    post:
+      tags: [bills]
+      summary: Upload bill manually
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                category:
+                  type: string
+      responses:
+        '201':
+          description: Bill uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+
+  /bills/webhook/email:
+    post:
+      tags: [bills]
+      summary: Webhook for email-forwarded bills
+      description: Internal endpoint for Mailgun/Postmark webhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Bill ingested
+
+  # =============================================================================
+  # ADMIN
+  # =============================================================================
+  /admin/vendors:
+    get:
+      tags: [admin]
+      summary: List all vendors
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Vendors list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vendor'
+    
+    post:
+      tags: [admin]
+      summary: Add new vendor
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorCreate'
+      responses:
+        '201':
+          description: Vendor added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+
+  /admin/vendors/{vendorId}:
+    patch:
+      tags: [admin]
+      summary: Update vendor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vendorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorUpdate'
+      responses:
+        '200':
+          description: Vendor updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserIdParam:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          description: Token expiry in seconds
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        phone:
+          type: string
+        household_size:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    FamilyMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        relationship:
+          type: string
+        can_add_items:
+          type: boolean
+        can_place_orders:
+          type: boolean
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        subcategory:
+          type: string
+        unit:
+          type: string
+        brand:
+          type: string
+        image_url:
+          type: string
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            description:
+              type: string
+            typical_shelf_life_days:
+              type: integer
+            vendor_availability:
+              type: array
+              items:
+                type: object
+                properties:
+                  vendor_slug:
+                    type: string
+                  in_stock:
+                    type: boolean
+                  price:
+                    type: number
+                    format: float
+
+    VendorPrice:
+      type: object
+      properties:
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+        price:
+          type: number
+          format: float
+        mrp:
+          type: number
+          format: float
+        discount_percentage:
+          type: number
+          format: float
+        in_stock:
+          type: boolean
+        delivery_time_hours:
+          type: integer
+        fetched_at:
+          type: string
+          format: date-time
+
+    PriceHistoryPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        price:
+          type: number
+          format: float
+        vendor_slug:
+          type: string
+
+    Vendor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        logo_url:
+          type: string
+        reliability_score:
+          type: number
+          format: float
+        avg_delivery_time_hours:
+          type: integer
+        cancellation_rate:
+          type: number
+          format: float
+        delivery_fee:
+          type: number
+          format: float
+
+    VendorCreate:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        api_base_url:
+          type: string
+        api_key:
+          type: string
+
+    VendorUpdate:
+      type: object
+      properties:
+        reliability_score:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+
+    Basket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_active:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BasketItem'
+        created_at:
+          type: string
+          format: date-time
+
+    BasketItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        quantity:
+          type: number
+          format: float
+        unit:
+          type: string
+        is_suggestion:
+          type: boolean
+
+    PriceComparison:
+      type: object
+      properties:
+        strategy:
+          type: string
+          enum: [optimal, single_vendor]
+        vendor_splits:
+          type: array
+          items:
+            type: object
+            properties:
+              vendor:
+                $ref: '#/components/schemas/Vendor'
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: string
+                      format: uuid
+                    quantity:
+                      type: number
+                    unit_price:
+                      type: number
+              subtotal:
+                type: number
+              delivery_fee:
+                type: number
+              total:
+                type: number
+        savings_vs_single_vendor:
+          type: number
+        recommended_vendor_split:
+          type: boolean
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_number:
+          type: string
+        status:
+          type: string
+        subtotal:
+          type: number
+        delivery_fee:
+          type: number
+        tax:
+          type: number
+        total:
+          type: number
+        is_auto_order:
+          type: boolean
+        placed_at:
+          type: string
+          format: date-time
+
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+            delivery_address:
+              type: object
+
+    OrderItem:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+        quantity:
+          type: number
+        unit_price:
+          type: number
+        total_price:
+          type: number
+        vendor_tracking_url:
+          type: string
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        quantity:
+          type: number
+        unit:
+          type: string
+        expiry_date:
+          type: string
+          format: date
+        location:
+          type: string
+
+    InventoryItemCreate:
+      type: object
+      required: [product_id, quantity]
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+        unit:
+          type: string
+        expiry_date:
+          type: string
+          format: date
+        location:
+          type: string
+
+    ReorderPrediction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        current_quantity:
+          type: number
+        predicted_runout_date:
+          type: string
+          format: date
+        predicted_reorder_quantity:
+          type: number
+        confidence_score:
+          type: number
+          format: float
+        reorder_status:
+          type: string
+          enum: [enabled, disabled, snoozed]
+        auto_order_scheduled_for:
+          type: string
+          format: date-time
+
+    Bill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vendor_name:
+          type: string
+        bill_number:
+          type: string
+        bill_date:
+          type: string
+          format: date
+        total_amount:
+          type: number
+        category:
+          type: string
+        source:
+          type: string
+        is_verified:
+          type: boolean
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              item_name:
+                type: string
+              quantity:
+                type: number
+              total_price:
+                type: number
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "unauthorized"
+            message: "Invalid or expired token"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

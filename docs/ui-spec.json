@@ -1,0 +1,451 @@
+{
+  "appName": "My Home",
+  "platform": "Mobile (React Native) + Web Admin (React)",
+  "version": "1.0",
+  "designSystem": {
+    "tokens": {
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "32px",
+        "xxl": "48px"
+      },
+      "typography": {
+        "fontFamily": {
+          "primary": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+          "mono": "JetBrains Mono, monospace"
+        },
+        "scale": {
+          "h1": { "size": "32px", "weight": "700", "lineHeight": "40px" },
+          "h2": { "size": "24px", "weight": "600", "lineHeight": "32px" },
+          "h3": { "size": "20px", "weight": "600", "lineHeight": "28px" },
+          "body": { "size": "16px", "weight": "400", "lineHeight": "24px" },
+          "bodySmall": { "size": "14px", "weight": "400", "lineHeight": "20px" },
+          "caption": { "size": "12px", "weight": "400", "lineHeight": "16px" },
+          "button": { "size": "16px", "weight": "600", "lineHeight": "24px" }
+        }
+      },
+      "colors": {
+        "primary": { "main": "#10B981", "light": "#34D399", "dark": "#059669" },
+        "secondary": { "main": "#6366F1", "light": "#818CF8", "dark": "#4F46E5" },
+        "error": { "main": "#EF4444", "light": "#F87171", "dark": "#DC2626" },
+        "warning": { "main": "#F59E0B", "light": "#FBBF24", "dark": "#D97706" },
+        "success": { "main": "#10B981", "light": "#34D399", "dark": "#059669" },
+        "neutral": {
+          "white": "#FFFFFF",
+          "50": "#F9FAFB",
+          "100": "#F3F4F6",
+          "200": "#E5E7EB",
+          "300": "#D1D5DB",
+          "500": "#6B7280",
+          "700": "#374151",
+          "900": "#111827"
+        },
+        "background": {
+          "primary": "#FFFFFF",
+          "secondary": "#F9FAFB",
+          "tertiary": "#F3F4F6"
+        },
+        "text": {
+          "primary": "#111827",
+          "secondary": "#6B7280",
+          "disabled": "#D1D5DB",
+          "inverse": "#FFFFFF"
+        }
+      },
+      "borderRadius": {
+        "sm": "4px",
+        "md": "8px",
+        "lg": "12px",
+        "xl": "16px",
+        "full": "9999px"
+      },
+      "shadows": {
+        "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+        "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+      }
+    },
+    "components": [
+      {
+        "name": "Button",
+        "variants": ["primary", "secondary", "outline", "ghost", "danger"],
+        "sizes": ["sm", "md", "lg"],
+        "states": ["default", "hover", "active", "disabled", "loading"]
+      },
+      {
+        "name": "Card",
+        "variants": ["default", "elevated", "outlined"],
+        "props": ["title", "subtitle", "footer", "image", "actions"]
+      },
+      {
+        "name": "Modal",
+        "sizes": ["sm", "md", "lg", "fullscreen"],
+        "props": ["title", "content", "primaryAction", "secondaryAction", "closeButton"]
+      },
+      {
+        "name": "Input",
+        "types": ["text", "email", "password", "search", "number", "tel"],
+        "variants": ["default", "error", "disabled"],
+        "props": ["label", "placeholder", "helperText", "errorText", "prefix", "suffix"]
+      },
+      {
+        "name": "ListItem",
+        "variants": ["default", "clickable", "swipeable"],
+        "props": ["avatar", "title", "subtitle", "trailing", "badge", "divider"]
+      },
+      {
+        "name": "Avatar",
+        "sizes": ["xs", "sm", "md", "lg", "xl"],
+        "variants": ["image", "initials", "icon"]
+      },
+      {
+        "name": "Badge",
+        "variants": ["default", "success", "error", "warning", "info"],
+        "sizes": ["sm", "md"]
+      },
+      {
+        "name": "Chip",
+        "variants": ["filled", "outlined"],
+        "states": ["default", "selected", "disabled"]
+      },
+      {
+        "name": "Toast",
+        "variants": ["success", "error", "warning", "info"],
+        "position": ["top", "bottom"],
+        "duration": [3000, 5000]
+      }
+    ]
+  },
+  "screens": [
+    {
+      "id": "login",
+      "name": "Login / Signup",
+      "platform": "Mobile",
+      "purpose": "Authenticate users via email/password or Google OAuth",
+      "layout": "Single column centered form",
+      "components": [
+        "Logo (top center)",
+        "Input (email)",
+        "Input (password)",
+        "Button (Login - primary)",
+        "Button (Sign up with Google - outline)",
+        "Link (Forgot password?)",
+        "Link (Don't have an account? Sign up)"
+      ],
+      "wireframe": "┌─────────────────┐\n│   [MY HOME]     │\n│                 │\n│ ┌─────────────┐ │\n│ │ Email       │ │\n│ └─────────────┘ │\n│ ┌─────────────┐ │\n│ │ Password    │ │\n│ └─────────────┘ │\n│ [Login Button]  │\n│ [Google Button] │\n│ Forgot password?│\n│ Sign up →       │\n└─────────────────┘",
+      "emptyState": null,
+      "microcopy": {
+        "primaryCTA": "Login",
+        "secondaryCTA": "Continue with Google",
+        "helperText": "We'll send a verification email"
+      }
+    },
+    {
+      "id": "home",
+      "name": "Home",
+      "platform": "Mobile",
+      "purpose": "Dashboard showing current grocery list, AI suggestions, and quick actions",
+      "layout": "Vertical scroll with sticky header",
+      "components": [
+        "Header (avatar, notifications icon)",
+        "Greeting banner ('Hi Priya, you have 12 items')",
+        "Card (Current List preview - 3 items, See all link)",
+        "Card (AI Suggestions - 2 predictive items, Add all button)",
+        "Card (Unused Items - 1 expiring item, View all link)",
+        "Button (+ New List - floating action)",
+        "Bottom navigation (Home, Compare, Orders, More)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ 👤  Hi Priya 🔔 │\n├─────────────────┤\n│ Current List    │\n│ ✓ Milk          │\n│ ✓ Bread         │\n│ ✓ Eggs          │\n│ See all (12) →  │\n├─────────────────┤\n│ 🤖 Suggested    │\n│ • Rice (3 days) │\n│ • Dal (5 days)  │\n│ [Add all]       │\n├─────────────────┤\n│ ⚠ Expiring Soon │\n│ • Yogurt (2 days│\n└─[+]─[≡]─[📦]─[⋮]┘",
+      "emptyState": {
+        "title": "No grocery list yet",
+        "description": "Start by adding items or let AI suggest based on your habits",
+        "cta": "Create First List"
+      },
+      "microcopy": {
+        "primaryCTA": "Compare & Buy",
+        "secondaryCTA": "Add all suggestions",
+        "helperText": "Tap + to add items quickly"
+      }
+    },
+    {
+      "id": "grocery-list",
+      "name": "Grocery List",
+      "platform": "Mobile",
+      "purpose": "View, edit, and manage the current shopping list",
+      "layout": "List with category grouping and action bar",
+      "components": [
+        "Header (List name, edit icon, share icon)",
+        "Search bar (with voice input icon)",
+        "Chip group (All, Vegetables, Dairy, Pantry, etc.)",
+        "ListItem per product (checkbox, name, qty, price range, delete icon)",
+        "Floating button (+ Add item, 🎤 Voice add, 📷 Scan list)",
+        "Bottom bar (Total items: 12, Compare prices button)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Weekly List ✏ │\n│ [Search... 🎤]  │\n│ [All][Veg][Dairy│\n├─────────────────┤\n│ ☐ Milk 1L       │\n│   ₹52-68 🗑     │\n│ ☐ Bread (brown) │\n│   ₹38-45 🗑     │\n│ ☐ Tomatoes 1kg  │\n│   ₹25-40 🗑     │\n├─────────────────┤\n│ 12 items        │\n│ [Compare Prices]│\n└─[+]─[🎤]─[📷]───┘",
+      "emptyState": {
+        "title": "Your list is empty",
+        "description": "Add items using text, voice, or scan a photo of your list",
+        "cta": "Add First Item"
+      },
+      "microcopy": {
+        "primaryCTA": "Compare Prices",
+        "secondaryCTA": "Add via voice",
+        "helperText": "Say item names clearly for best results"
+      }
+    },
+    {
+      "id": "compare-buy",
+      "name": "Compare & Buy",
+      "platform": "Mobile",
+      "purpose": "Show price comparison across vendors and enable purchase",
+      "layout": "Table view with vendor columns, optimal split highlighted",
+      "components": [
+        "Header (Compare Prices)",
+        "Toggle (Optimal split / Single vendor)",
+        "Table header (Item, Amazon, Flipkart, JioMart, Blinkit)",
+        "Table row per item (product name, prices with delivery time)",
+        "Summary card (Total cost per vendor, delivery fees, best deal badge)",
+        "Button (Buy from optimal - primary)",
+        "Button (Customize split - secondary)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Compare       │\n│ [Optimal][Single│\n├─────────────────┤\n│ Item  |Amz|Flip │\n│ Milk  |58 |52★  │\n│ Bread |42★|45   │\n│ Eggs  |68 |65★  │\n├─────────────────┤\n│ Total: ₹482     │\n│ vs ₹520 (Amz)  │\n│ Save ₹38 (7%)   │\n│ [Buy Optimal]   │\n│ [Customize]     │\n└─────────────────┘",
+      "emptyState": null,
+      "microcopy": {
+        "primaryCTA": "Buy from Optimal Split",
+        "secondaryCTA": "Customize vendors",
+        "helperText": "★ = Best price per item"
+      }
+    },
+    {
+      "id": "order-history",
+      "name": "Order History",
+      "platform": "Mobile",
+      "purpose": "View past orders with status and reorder option",
+      "layout": "Vertical list with date grouping",
+      "components": [
+        "Header (Orders, filter icon)",
+        "Filter chips (All, Pending, Delivered, Auto-orders)",
+        "Card per order (date, vendor logos, items count, total, status badge, Reorder button)",
+        "ListItem per order item (product, qty, price)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Orders     🔽 │\n│ [All][Pending]  │\n├─────────────────┤\n│ Oct 20, 2025    │\n│ 🛒 Amazon + 2   │\n│ 8 items  ₹620   │\n│ [Delivered] ✓   │\n│ [Reorder]       │\n├─────────────────┤\n│ Oct 15, 2025    │\n│ 🛒 JioMart      │\n│ 5 items  ₹340   │\n│ [Out for deliv] │\n└─────────────────┘",
+      "emptyState": {
+        "title": "No orders yet",
+        "description": "Your order history will appear here",
+        "cta": "Start Shopping"
+      },
+      "microcopy": {
+        "primaryCTA": "Reorder",
+        "secondaryCTA": "Track order",
+        "helperText": "Tap order to see details"
+      }
+    },
+    {
+      "id": "inventory",
+      "name": "Inventory",
+      "platform": "Mobile",
+      "purpose": "Track pantry items, quantities, and expiry dates",
+      "layout": "List grouped by category with quick add",
+      "components": [
+        "Header (Pantry, add icon)",
+        "Search bar",
+        "Chip group (All, Expiring soon, Low stock)",
+        "ListItem per item (name, qty, expiry date badge, edit icon)",
+        "Floating button (+ Add item, 🎤 Voice add, 📷 Scan barcode)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Pantry      + │\n│ [Search...]     │\n│ [All][Expiring] │\n├─────────────────┤\n│ Rice (5kg)      │\n│ 3kg left ⚠ 2day│\n│ Dal (1kg)       │\n│ 500g left       │\n│ Sugar (2kg)     │\n│ 1.5kg left      │\n└─[+]─[🎤]─[📷]───┘",
+      "emptyState": {
+        "title": "Start tracking your pantry",
+        "description": "Add items manually or scan barcodes to never run out",
+        "cta": "Add First Item"
+      },
+      "microcopy": {
+        "primaryCTA": "Add to inventory",
+        "secondaryCTA": "Scan barcode",
+        "helperText": "We'll alert you before items expire"
+      }
+    },
+    {
+      "id": "unused-items",
+      "name": "Unused Items",
+      "platform": "Mobile",
+      "purpose": "Highlight items that are expiring or haven't been used",
+      "layout": "Card grid with urgency indicators",
+      "components": [
+        "Header (Unused Items)",
+        "Card per item (product image, name, expiry date, days left badge, recipe suggestions link, Remove button)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Unused Items  │\n├─────────────────┤\n│ ┌─────────────┐ │\n│ │ 🥛 Yogurt   │ │\n│ │ Exp: Oct 24 │ │\n│ │ ⚠ 2 days    │ │\n│ │ [Recipes]   │ │\n│ │ [Remove]    │ │\n│ └─────────────┘ │\n│ ┌─────────────┐ │\n│ │ 🍞 Bread    │ │\n│ │ Exp: Oct 25 │ │\n└─────────────────┘",
+      "emptyState": {
+        "title": "Nothing going to waste!",
+        "description": "We'll alert you when items need attention",
+        "cta": null
+      },
+      "microcopy": {
+        "primaryCTA": "View recipes",
+        "secondaryCTA": "Mark as used",
+        "helperText": "Cook these soon to avoid waste"
+      }
+    },
+    {
+      "id": "bills",
+      "name": "Bills & Expenses",
+      "platform": "Mobile",
+      "purpose": "Track all household bills and spending",
+      "layout": "Timeline view with monthly summary",
+      "components": [
+        "Header (Bills, upload icon)",
+        "Summary card (This month: ₹12,450, vs last month)",
+        "Chart (Spending by category - bar chart)",
+        "ListItem per bill (vendor, date, amount, category badge, View PDF link)",
+        "Floating button (+ Upload bill)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Bills       + │\n├─────────────────┤\n│ This Month      │\n│ ₹12,450 ▼8%    │\n│ [Bar chart]     │\n├─────────────────┤\n│ Oct 20 - Amazon │\n│ ₹620 [Grocery] │\n│ Oct 18 - Elec.  │\n│ ₹1,250 [Utility │\n│ Oct 15 - JioMart│\n│ ₹340 [Grocery] │\n└─────────────────┘",
+      "emptyState": {
+        "title": "No bills tracked yet",
+        "description": "Upload bills via email or manually add them here",
+        "cta": "Upload First Bill"
+      },
+      "microcopy": {
+        "primaryCTA": "Upload bill",
+        "secondaryCTA": "Export to Excel",
+        "helperText": "Forward bills to bills@myhome.app"
+      }
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "platform": "Mobile",
+      "purpose": "Manage account, preferences, and app configuration",
+      "layout": "Grouped list with sections",
+      "components": [
+        "Header (Settings)",
+        "Section: Account (Profile, Family members, Addresses)",
+        "Section: Preferences (Auto-reorder toggle, Vendor preferences, Notifications)",
+        "Section: Privacy (Data export, Delete account)",
+        "Section: Support (Help, Contact us, Privacy policy)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Settings      │\n├─────────────────┤\n│ ACCOUNT         │\n│ Profile →       │\n│ Family (3) →    │\n│ Addresses (2) → │\n├─────────────────┤\n│ PREFERENCES     │\n│ Auto-reorder ✓  │\n│ Vendor prefs →  │\n│ Notifications → │\n├─────────────────┤\n│ PRIVACY         │\n│ Export data →   │\n│ Delete account →│\n└─────────────────┘",
+      "emptyState": null,
+      "microcopy": {
+        "primaryCTA": "Save changes",
+        "secondaryCTA": "Cancel",
+        "helperText": "Changes sync across all devices"
+      }
+    },
+    {
+      "id": "family-profiles",
+      "name": "Family Profiles",
+      "platform": "Mobile",
+      "purpose": "Manage family members who share the household account",
+      "layout": "List with add button",
+      "components": [
+        "Header (Family Members, add icon)",
+        "Card per member (avatar, name, email, role badge, edit/remove icons)",
+        "Button (+ Add family member)"
+      ],
+      "wireframe": "┌─────────────────┐\n│ ← Family      + │\n├─────────────────┤\n│ 👤 Priya        │\n│ [Primary] ✏ 🗑 │\n├─────────────────┤\n│ 👤 Rahul        │\n│ [Member]  ✏ 🗑 │\n├─────────────────┤\n│ 👤 Aarav        │\n│ [Child]   ✏ 🗑 │\n├─────────────────┤\n│ [+ Add Member]  │\n└─────────────────┘",
+      "emptyState": {
+        "title": "Add family members",
+        "description": "Share your household account and sync lists in real-time",
+        "cta": "Add First Member"
+      },
+      "microcopy": {
+        "primaryCTA": "Add member",
+        "secondaryCTA": "Send invite",
+        "helperText": "Only primary user can make purchases"
+      }
+    },
+    {
+      "id": "admin-dashboard",
+      "name": "Admin Dashboard",
+      "platform": "Web",
+      "purpose": "Monitor system health, orders, vendors, and users",
+      "layout": "Multi-column layout with sidebar navigation",
+      "components": [
+        "Sidebar (Dashboard, Orders, Vendors, Users, Predictions, Settings)",
+        "Header (breadcrumb, notifications, user menu)",
+        "KPI cards (Active users, Orders today, Avg savings, Auto-reorder rate)",
+        "Chart (Orders trend - line chart)",
+        "Table (Recent orders - 10 rows with status)"
+      ],
+      "wireframe": "┌─┬───────────────────────┐\n│D│ Dashboard  🔔 👤      │\n│a├───────────────────────┤\n│s│ ┌──┐┌──┐┌──┐┌──┐     │\n│h│ │1k││45││₹38││42%│    │\n│b│ └──┘└──┘└──┘└──┘     │\n│o│ [Orders trend chart]  │\n│a│ Recent Orders         │\n│r│ | ID | User | Amt |   │\n│d│ | 01 | Priy | 620 |   │\n└─┴───────────────────────┘",
+      "emptyState": null,
+      "microcopy": {
+        "primaryCTA": "View details",
+        "secondaryCTA": "Export report",
+        "helperText": "Data refreshes every 5 minutes"
+      }
+    },
+    {
+      "id": "admin-vendors",
+      "name": "Vendor Management",
+      "platform": "Web",
+      "purpose": "Manage vendor integrations and monitor performance",
+      "layout": "Table with filters and detail panel",
+      "components": [
+        "Header (Vendors, add vendor button)",
+        "Filter bar (Status, Region, Reliability)",
+        "Table (Vendor name, API status, Orders, Reliability score, Avg delivery time, Actions)",
+        "Detail panel (Vendor profile, Price feed log, Performance charts)"
+      ],
+      "wireframe": "┌─────────────────────────┐\n│ Vendors     [+ Add]     │\n│ [All][Active][Inactive] │\n├─────────────────────────┤\n│ Vendor    | API | Orders│\n│ Amazon    | ✓   | 1.2k  │\n│ Flipkart  | ✓   | 980   │\n│ JioMart   | ⚠   | 560   │\n│ Blinkit   | ✓   | 340   │\n└─────────────────────────┘",
+      "emptyState": {
+        "title": "No vendors configured",
+        "description": "Add vendor API integrations to start comparing prices",
+        "cta": "Add First Vendor"
+      },
+      "microcopy": {
+        "primaryCTA": "Edit vendor",
+        "secondaryCTA": "View price feed",
+        "helperText": "⚠ = API errors in last 24h"
+      }
+    }
+  ],
+  "userFlows": [
+    {
+      "name": "Create List & Buy",
+      "steps": [
+        "User opens app → Home screen",
+        "Tap + button → New List modal",
+        "Add items via text/voice/photo → Grocery List screen",
+        "Review list (12 items) → Tap Compare Prices",
+        "View optimal split (₹482, save ₹38) → Compare & Buy screen",
+        "Tap Buy from Optimal Split → Checkout modal",
+        "Confirm payment → Order confirmation",
+        "Orders appear in Order History → Done"
+      ]
+    },
+    {
+      "name": "Auto-Reorder Opt-In",
+      "steps": [
+        "User receives push notification: 'Rice running low in 3 days'",
+        "Tap notification → Home screen with AI Suggestions card",
+        "See 'Rice (3 days)' with Learn more link",
+        "Tap Learn more → Auto-reorder explainer modal",
+        "Toggle 'Enable auto-reorder for Rice' → Settings saved",
+        "48 hours before runout, receive notification: 'Rice will auto-order tomorrow'",
+        "User can cancel/snooze or do nothing",
+        "Order auto-executes → Confirmation toast"
+      ]
+    },
+    {
+      "name": "Bill Capture",
+      "steps": [
+        "User forwards grocery bill email to bills@myhome.app",
+        "System receives email → Extracts PDF attachment",
+        "OCR runs → Parses vendor, date, items, amounts",
+        "Fuzzy match items to product catalog",
+        "User opens app → Bills screen",
+        "See new bill: 'Oct 20 - Amazon ₹620 [Grocery]'",
+        "Tap bill → View PDF + extracted items",
+        "User can edit/confirm items → Save",
+        "Bill added to monthly spending chart"
+      ]
+    }
+  ]
+}
