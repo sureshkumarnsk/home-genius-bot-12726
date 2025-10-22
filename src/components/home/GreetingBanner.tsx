@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBasket } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const GreetingBanner = () => {
-  const userName = "Priya";
+  const { user } = useAuth();
+  const userName = user?.user_metadata?.full_name?.split(' ')[0] || "User";
   const itemCount = 12;
 
   return (

@@ -1,6 +1,8 @@
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import {
   User,
   Users,
@@ -41,6 +43,25 @@ const menuSections = [
 
 const More = () => {
   const navigate = useNavigate();
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You've been successfully logged out.",
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background-secondary pb-20">
@@ -55,8 +76,8 @@ const More = () => {
                 <User className="w-8 h-8 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold">Priya Sharma</h3>
-                <p className="text-sm text-muted-foreground">priya@example.com</p>
+                <h3 className="text-xl font-bold">{user?.user_metadata?.full_name || "User"}</h3>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </div>
@@ -99,7 +120,10 @@ const More = () => {
         {/* Logout Button */}
         <Card className="border-destructive/30">
           <CardContent className="p-0">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-destructive/10 transition-colors text-destructive">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-between p-4 hover:bg-destructive/10 transition-colors text-destructive"
+            >
               <div className="flex items-center gap-3">
                 <LogOut className="w-5 h-5" />
                 <span className="font-medium">Logout</span>

@@ -1,15 +1,61 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
+  const { toast } = useToast();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Redirect if already logged in
+  if (user) {
     navigate("/");
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await signUp(email, password, fullName);
+        if (error) throw error;
+        
+        toast({
+          title: "Account created!",
+          description: "Welcome to My Home. You're now signed in.",
+        });
+        navigate("/");
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) throw error;
+        
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+        navigate("/");
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: isSignUp ? "Sign up failed" : "Login failed",
+        description: error.message || "Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -26,15 +72,31 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Login Form */}
+        {/* Login/Signup Form */}
         <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Your Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -45,12 +107,15 @@ const Login = () => {
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
               />
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Login
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? "Please wait..." : (isSignUp ? "Sign Up" : "Login")}
             </Button>
 
             <div className="relative">
@@ -93,13 +158,14 @@ const Login = () => {
           </form>
 
           <div className="mt-6 text-center space-y-2">
-            <button className="text-sm text-primary hover:underline">
-              Forgot password?
-            </button>
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <button className="text-primary hover:underline font-medium">
-                Sign up
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-primary hover:underline font-medium"
+              >
+                {isSignUp ? "Sign in" : "Sign up"}
               </button>
             </p>
           </div>
