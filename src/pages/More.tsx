@@ -2,7 +2,6 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import {
   User,
   Users,
@@ -44,23 +43,10 @@ const menuSections = [
 const More = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
-  const { toast } = useToast();
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Logged out",
-        description: "You've been successfully logged out.",
-      });
-      navigate("/login");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-      });
-    }
+    await signOut();
+    navigate("/login");
   };
 
   return (
@@ -92,7 +78,7 @@ const More = () => {
             </h2>
             <Card>
               <CardContent className="p-0">
-                {section.items.map((item, index) => (
+                {section.items.map((item) => (
                   <button
                     key={item.label}
                     onClick={() => navigate(item.path)}
